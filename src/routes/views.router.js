@@ -2,7 +2,7 @@ const {Router} = require('express');
 const CartManager = require('../dao/dbManagers/CartManager');
 const ItemsManager = require('../dao/dbManagers/ItemsManager');
 const jwt = require('jsonwebtoken');
-const { getToken } = require('../utils');
+const passport = require('passport')
 
 const manager = new ItemsManager()
 const cartManager = new CartManager()
@@ -25,7 +25,7 @@ router.get('/chat',(req, res)=>{
 
 /** views */
 
-router.get('/items', getToken, async (req, res)=>{    
+router.get('/items', passport.authenticate('current',{session:false}), async (req, res)=>{    
 
     try {
         const {docs,...rest} = await manager.getItems(req.query);

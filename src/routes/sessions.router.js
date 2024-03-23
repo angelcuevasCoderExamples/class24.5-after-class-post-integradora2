@@ -2,7 +2,6 @@ const {Router} = require('express');
 const userModel = require('../dao/models/user');
 const passport = require('passport')
 const jwt = require('jsonwebtoken');
-const { getToken } = require('../utils');
 
 const sessionRouter = Router();
 
@@ -49,9 +48,6 @@ sessionRouter.get('/failedLogin',(req, res)=>{
 })
 
 sessionRouter.get('/logout',(req, res)=>{
-    // req.session.destroy((err)=>{
-    //     if(err) return res.status(500).send('there was an error destroying session')
-    // })
     res.clearCookie('jwtCookie')
     res.redirect('/login')
 })
@@ -77,8 +73,8 @@ sessionRouter.get('/githubcallback', passport.authenticate('github', {failureRed
     res.redirect('/items')
 })
 
-sessionRouter.get('/current', getToken, (req, res)=>{
-    const user = req.tokenUser; 
+sessionRouter.get('/current', passport.authenticate('current',{session:false}), (req, res)=>{
+    const user = req.user; 
     res.send({payload: user})
 })
 

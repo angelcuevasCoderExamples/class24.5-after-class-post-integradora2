@@ -3,6 +3,7 @@ const local = require('passport-local');
 const {hashPassword, isValidPassword} = require('../utils')
 const github = require('passport-github2');
 const userModel = require('../dao/models/user');
+const passportJWT = require('passport-jwt')
 
 const initializePassport = ()=>{
     
@@ -83,6 +84,32 @@ const initializePassport = ()=>{
         };
     }))
 
+
+
+    passport.use('current',new passportJWT.Strategy({
+        jwtFromRequest: passportJWT.ExtractJwt.fromExtractors([cookieExtractor]),
+        secretOrKey: 'JWT_SECRET',
+        session:false
+    }, async (jwtPayload, done)=>{
+        try {
+            if(!jwtPayload){
+                return done(null, false, {messages:'Token not valid'})
+            }
+            console.log("valid token")
+            return done(null, jwtPayload);
+        } catch (error) {
+            return done(error,false,{messages:error.message});
+        }
+    }))
+
+}
+
+function cookieExtractor(req){
+    let token = null; 
+    if(req && req.cookies){
+        token = req.cookies.jwtCookie
+    }
+    return token; 
 }
 
 passport.serializeUser((user, done)=>{
@@ -90,6 +117,7 @@ passport.serializeUser((user, done)=>{
 })
 
 passport.deserializeUser(async (id, done)=>{
+    console.log("por aqui")
     const user = await userModel.findOne({_id:id});
     done(null, user)
 })
